@@ -1,12 +1,13 @@
-const _ = require('lodash');
+// const _ = require('lodash');
+import { now } from 'lodash';
+import Throttle from 'lodash.throttle';
 const form = document.querySelector('.feedback-form');
-// объект для хранения введенных данных
-let feedbackContent = {};
+const KEY = 'feedback-form-state';
 
 //функция проверки localStorage и заполнения полей при положительном результате
 const onPageLoad = () => {
-  if (localStorage.getItem('feedback-form-state')) {
-    const loadlocalStorageData = JSON.parse(localStorage.getItem('feedback-form-state'));
+  if (localStorage.getItem(KEY)) {
+    const loadlocalStorageData = JSON.parse(localStorage.getItem(KEY));
     form.email.value = loadlocalStorageData.email;
     form.message.value = loadlocalStorageData.message;
   }
@@ -28,23 +29,24 @@ const handleSubmit = function (event) {
     return alert('Please fill in all the fields!');
   }
 
-  console.log(feedbackContent);
-  localStorage.removeItem('feedback-form-state');
+  console.log(JSON.parse(localStorage.getItem(KEY)));
+  localStorage.removeItem(KEY);
   form.reset();
 };
 form.addEventListener('submit', handleSubmit);
 
-/*функция сохранения полей в localStorage
-без throttle работает отлично, 
-с throttle выдает ошибку в консоль и не сохраняет данные
+/*
+функция сохранения полей в localStorage
  */
-const saveInput = function (e) {
-  const {
-    elements: { email, message },
-  } = e.currentTarget;
-  feedbackContent.email = email.value;
-  feedbackContent.message = message.value;
-  localStorage.setItem('feedback-form-state', JSON.stringify(feedbackContent));
+
+const onInputChange = function ({ target: { name, value } }) {
+  const savedInputContent = JSON.parse(localStorage.getItem(KEY)) || {};
+  const changedInputValue = { [name]: value };
+  const updateContent = JSON.stringify({
+    ...savedInputContent,
+    ...changedInputValue,
+  });
+  localStorage.setItem(KEY, updateContent);
 };
-form.addEventListener('input', saveInput);
-// form.addEventListener('input', _.throttle(saveInput, 500));
+
+form.addEventListener('input', Throttle(onInputChange, 500));
