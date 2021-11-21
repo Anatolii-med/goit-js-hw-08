@@ -39,8 +39,11 @@ form.addEventListener('submit', handleSubmit);
 с throttle выдает ошибку в консоль и не сохраняет данные
  */
 const saveInput = function (e) {
-  feedbackContent.email = e.currentTarget.email.value;
-  feedbackContent.message = e.currentTarget.message.value;
+  const {
+    elements: { email, message },
+  } = e.currentTarget;
+  feedbackContent.email = email.value;
+  feedbackContent.message = message.value;
   localStorage.setItem('feedback-form-state', JSON.stringify(feedbackContent));
 };
 form.addEventListener('input', saveInput);
